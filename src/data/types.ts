@@ -1,4 +1,4 @@
-export type PlatformId = "tizen";
+export type PlatformId = "tizen" | "webos";
 
 export interface BrowserInfo {
   /** Display name, e.g. "Chromium 108" */

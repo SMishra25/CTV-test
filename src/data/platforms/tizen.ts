@@ -45,9 +45,9 @@ export const tizenPlatform: Platform = {
       label: "2021 — Tizen 6.0",
       year: 2021,
       browser: {
-        name: "Tizen WebKit (Chromium 85)",
-        chromiumVersion: "85",
-        launchKey: "chromium-85",
+        name: "Tizen WebKit (Chromium 76)",
+        chromiumVersion: "76",
+        launchKey: "chromium-76",
       },
     },
     {
@@ -55,9 +55,9 @@ export const tizenPlatform: Platform = {
       label: "2022 — Tizen 6.5",
       year: 2022,
       browser: {
-        name: "Tizen WebKit (Chromium 94)",
-        chromiumVersion: "94",
-        launchKey: "chromium-94",
+        name: "Tizen WebKit (Chromium 85)",
+        chromiumVersion: "85",
+        launchKey: "chromium-85",
       },
     },
     {
@@ -65,9 +65,9 @@ export const tizenPlatform: Platform = {
       label: "2023 — Tizen 7.0",
       year: 2023,
       browser: {
-        name: "Tizen WebKit (Chromium 108)",
-        chromiumVersion: "108",
-        launchKey: "chromium-108",
+        name: "Tizen WebKit (Chromium 94)",
+        chromiumVersion: "94",
+        launchKey: "chromium-94",
       },
     },
     {
@@ -75,9 +75,9 @@ export const tizenPlatform: Platform = {
       label: "2024 — Tizen 8.0",
       year: 2024,
       browser: {
-        name: "Tizen WebKit (Chromium 120)",
-        chromiumVersion: "120",
-        launchKey: "chromium-120",
+        name: "Tizen WebKit (Chromium 108)",
+        chromiumVersion: "108",
+        launchKey: "chromium-108",
       },
     },
     {
@@ -85,9 +85,9 @@ export const tizenPlatform: Platform = {
       label: "2025 — Tizen 9.0 (latest)",
       year: 2025,
       browser: {
-        name: "Tizen WebKit (Chromium 126)",
-        chromiumVersion: "126",
-        launchKey: "chromium-126",
+        name: "Tizen WebKit (Chromium 120)",
+        chromiumVersion: "120",
+        launchKey: "chromium-120",
       },
     },
   ],

@@ -10,6 +10,11 @@ export type BrowserInstallTarget =
 
 /** Closest installable build per TV Chromium major (update after device UA checks). */
 export const INSTALL_BY_CHROMIUM_MAJOR: Record<string, BrowserInstallTarget> = {
+  "53": {
+    type: "chromium-snapshot",
+    revision: "515411",
+    label: "Chromium 64 (closest snapshot to TV ~53)",
+  },
   "56": {
     type: "chromium-snapshot",
     revision: "515411",
@@ -20,15 +25,35 @@ export const INSTALL_BY_CHROMIUM_MAJOR: Record<string, BrowserInstallTarget> = {
     revision: "515411",
     label: "Chromium 64 (closest snapshot to TV 63)",
   },
+  "68": {
+    type: "chromium-snapshot",
+    revision: "599821",
+    label: "Chromium 72 (closest snapshot to TV 68)",
+  },
   "69": {
     type: "chromium-snapshot",
     revision: "599821",
     label: "Chromium 72 (closest snapshot to TV 69)",
   },
+  "76": {
+    type: "chromium-snapshot",
+    revision: "782078",
+    label: "Chromium 85 (closest snapshot to TV 76)",
+  },
+  "79": {
+    type: "chromium-snapshot",
+    revision: "782078",
+    label: "Chromium 85 (closest snapshot to TV 79)",
+  },
   "85": {
     type: "chromium-snapshot",
     revision: "782078",
     label: "Chromium 85",
+  },
+  "87": {
+    type: "chromium-snapshot",
+    revision: "782078",
+    label: "Chromium 85 (closest snapshot to TV 87)",
   },
   "94": {
     type: "chromium-snapshot",

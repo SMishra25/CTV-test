@@ -1,8 +1,9 @@
 import type { Platform, PlatformId } from "./types";
 import { tizenPlatform } from "./platforms/tizen";
+import { webosPlatform } from "./platforms/webos";
 
 /** Registry of supported TV platforms. Add new files under platforms/ and register here. */
-export const platforms: Platform[] = [tizenPlatform];
+export const platforms: Platform[] = [tizenPlatform, webosPlatform];
 
 export function getPlatform(id: PlatformId): Platform | undefined {
   return platforms.find((p) => p.id === id);
