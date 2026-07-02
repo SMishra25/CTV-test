@@ -1,5 +1,9 @@
 import type { Plugin } from "vite";
-import { launchChromiumForModel } from "./launch-chromium";
+import {
+  DockerError,
+  launchExactBrowserInDocker,
+  stopAllSessions,
+} from "./docker-launch";
 
 interface LaunchBody {
   browser: {
@@ -8,6 +12,24 @@ interface LaunchBody {
     name: string;
   };
   modelLabel: string;
+  appUrl?: string;
+}
+
+function readJsonBody<T>(req: import("http").IncomingMessage): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+    });
+    req.on("end", () => {
+      try {
+        resolve(body ? (JSON.parse(body) as T) : ({} as T));
+      } catch (err) {
+        reject(err);
+      }
+    });
+    req.on("error", reject);
+  });
 }
 
 export function launchBrowserPlugin(): Plugin {
@@ -21,52 +43,80 @@ export function launchBrowserPlugin(): Plugin {
           return;
         }
 
-        let body = "";
-        req.on("data", (chunk) => {
-          body += chunk;
-        });
-        req.on("end", () => {
-          void (async () => {
-            try {
-              const payload = JSON.parse(body) as LaunchBody;
-              const { chromiumVersion, launchKey } = payload.browser ?? {};
-              if (!chromiumVersion || !launchKey) {
-                res.statusCode = 400;
-                res.end(
-                  JSON.stringify({ ok: false, message: "Missing browser version" })
-                );
-                return;
-              }
-
-              const result = await launchChromiumForModel(
-                chromiumVersion,
-                launchKey
-              );
-
-              res.setHeader("Content-Type", "application/json");
+        void (async () => {
+          try {
+            const payload = await readJsonBody<LaunchBody>(req);
+            const chromiumVersion = payload.browser?.chromiumVersion;
+            if (!chromiumVersion) {
+              res.statusCode = 400;
               res.end(
-                JSON.stringify({
-                  ok: true,
-                  message: `Launched ${result.testBrowserLabel} for ${payload.modelLabel} (TV Chromium ${chromiumVersion})`,
-                  executable: result.executable,
-                  chromiumVersion: result.chromiumVersion,
-                  buildId: result.buildId,
-                })
+                JSON.stringify({ ok: false, message: "Missing browser version" })
               );
-            } catch (err) {
-              res.statusCode = 500;
-              res.end(
-                JSON.stringify({
-                  ok: false,
-                  message:
-                    err instanceof Error
-                      ? err.message
-                      : "Launch failed — try npm run install:browsers",
-                })
-              );
+              return;
             }
-          })();
-        });
+
+            const result = await launchExactBrowserInDocker({
+              chromiumMajor: chromiumVersion,
+              appUrl: payload.appUrl,
+              modelLabel: payload.modelLabel,
+            });
+
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                ok: true,
+                message: `Launched exact ${result.exactVersionHint} for ${payload.modelLabel}`,
+                chromiumVersion,
+                viewUrl: result.viewUrl,
+                debugPort: result.debugPort,
+                devtoolsUrl: result.devtoolsUrl,
+                containerId: result.containerId,
+              })
+            );
+          } catch (err) {
+            res.statusCode = err instanceof DockerError ? 400 : 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                ok: false,
+                message:
+                  err instanceof Error ? err.message : "Launch failed",
+              })
+            );
+          }
+        })();
+      });
+
+      server.middlewares.use("/api/stop", (req, res) => {
+        if (req.method !== "POST") {
+          res.statusCode = 405;
+          res.end(JSON.stringify({ ok: false, message: "POST only" }));
+          return;
+        }
+
+        void (async () => {
+          try {
+            const stopped = await stopAllSessions();
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                ok: true,
+                message: stopped.length
+                  ? `Stopped ${stopped.length} session(s)`
+                  : "No running sessions",
+                stopped,
+              })
+            );
+          } catch (err) {
+            res.statusCode = 500;
+            res.end(
+              JSON.stringify({
+                ok: false,
+                message: err instanceof Error ? err.message : "Stop failed",
+              })
+            );
+          }
+        })();
       });
     },
   };

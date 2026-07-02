@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "install:browsers": "tsx scripts/install-browsers.ts"
+    "docker:build": "docker build -t ctv-test-kit-browser:latest docker",
+    "docker:stop": "docker ps -q --filter label=ctv-test-kit=1 | xargs -r docker stop"
   },
   "dependencies": {
     "@puppeteer/browsers": "^2.10.5"

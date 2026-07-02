@@ -1,0 +1,10 @@
+{
+  "name": "ctv-browser-runner",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "In-container exact-Chromium resolver and launcher for CTV Test Kit",
+  "dependencies": {
+    "@puppeteer/browsers": "^2.10.5"
+  }
+}
