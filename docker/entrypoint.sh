@@ -16,6 +16,10 @@ for _ in $(seq 1 50); do
 done
 
 echo "[ctv] starting window manager"
+export DISPLAY="${DISPLAY_NUM}"
+xsetroot -solid "#2e2e2e" 2>/dev/null || true
+mkdir -p /root/.fluxbox
+cp /opt/runner/fluxbox/init /root/.fluxbox/init
 fluxbox >/tmp/fluxbox.log 2>&1 &
 
 echo "[ctv] starting x11vnc on :${VNC_PORT}"

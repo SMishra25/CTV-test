@@ -1,0 +1,2 @@
+session.screen0.rootCommand:	xsetroot -solid "#2e2e2e"
+session.screen0.toolbar.visible: false

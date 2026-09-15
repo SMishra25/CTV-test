@@ -5,6 +5,7 @@
   "type": "module",
   "description": "In-container exact-Chromium resolver and launcher for CTV Test Kit",
   "dependencies": {
-    "@puppeteer/browsers": "^2.10.5"
+    "@puppeteer/browsers": "^2.10.5",
+    "undici": "^5.28.5"
   }
 }

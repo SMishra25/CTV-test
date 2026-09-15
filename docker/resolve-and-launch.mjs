@@ -1,6 +1,7 @@
 import { spawn, execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { fetch } from "undici";
 import {
   Browser,
   BrowserPlatform,
@@ -21,7 +22,8 @@ const CFT_VERSIONS_URL =
  * (and before the next major's base) report this major. Platform-independent.
  */
 const SNAPSHOT_BASE_BY_MAJOR = {
-  53: 386251,
+  // Branch base for 53.0.2785 per chromium/src refs/heads/master@{#403382}
+  53: 403382,
   56: 433059,
   63: 508578,
   68: 561733,

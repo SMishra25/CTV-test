@@ -9,6 +9,8 @@ import {
 } from "./lib/launch";
 
 const APP_URL_STORAGE_KEY = "ctv-test-kit-app-url";
+const DEFAULT_APP_URL =
+  "https://ctv.play.tv2.no/pull-requests/PR-4103/18337/play/";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -46,9 +48,9 @@ function render() {
           type="url"
           id="app-url"
           name="app-url"
-          placeholder="https://localhost:3000"
+          placeholder="${DEFAULT_APP_URL}"
           spellcheck="false"
-          value="${localStorage.getItem(APP_URL_STORAGE_KEY) ?? ""}"
+          value="${localStorage.getItem(APP_URL_STORAGE_KEY) ?? DEFAULT_APP_URL}"
         />
         <p class="field-hint">Optional. Use <code>http://localhost:…</code> for a dev server on this machine — it is rewritten to reach the host from inside Docker.</p>
       </div>

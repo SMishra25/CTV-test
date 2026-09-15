@@ -103,6 +103,17 @@ input[type="text"] {
   font-style: italic;
 }
 
+.browser-warning {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #7a2e00;
+  background: #fff4e5;
+  border: 1px solid #f0c080;
+  border-radius: 6px;
+}
+
 .actions {
   margin-top: 16px;
   display: flex;

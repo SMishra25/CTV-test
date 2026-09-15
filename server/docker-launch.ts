@@ -7,6 +7,9 @@ import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 
 const IMAGE_TAG = "ctv-test-kit-browser:latest";
+const LEGACY_IMAGE_TAG = "ctv-test-kit-browser:legacy";
+/** Chromium majors that need the Ubuntu 18.04 runner (too old for Bookworm). */
+const LEGACY_MAJOR_MAX = 56;
 const CONTAINER_LABEL = "ctv-test-kit";
 const BROWSER_CACHE_VOLUME = "ctv-test-kit-browsers";
 const NOVNC_CONTAINER_PORT = 7900;
@@ -67,9 +70,16 @@ async function assertDockerRunning(): Promise<void> {
   }
 }
 
-async function imageExists(): Promise<boolean> {
+function imageTagForMajor(chromiumMajor: string): string {
+  const major = Number(chromiumMajor);
+  return Number.isFinite(major) && major <= LEGACY_MAJOR_MAX
+    ? LEGACY_IMAGE_TAG
+    : IMAGE_TAG;
+}
+
+async function imageExists(tag: string): Promise<boolean> {
   try {
-    await docker(["image", "inspect", IMAGE_TAG]);
+    await docker(["image", "inspect", tag]);
     return true;
   } catch {
     return false;
@@ -292,10 +302,13 @@ export async function launchExactBrowserInDocker(
 ): Promise<DockerLaunchResult> {
   await assertDockerRunning();
 
-  if (!(await imageExists())) {
-    throw new DockerError(
-      "Browser runner image not built yet. Run `npm run docker:build` once (first build downloads dependencies)."
-    );
+  const imageTag = imageTagForMajor(options.chromiumMajor);
+  if (!(await imageExists(imageTag))) {
+    const hint =
+      imageTag === LEGACY_IMAGE_TAG
+        ? "Legacy runner image missing (needed for Chromium 53–56). Run `npm run docker:build`."
+        : "Browser runner image not built yet. Run `npm run docker:build` once.";
+    throw new DockerError(hint);
   }
 
   // Only one session at a time: a running container competes for RAM (especially
@@ -332,7 +345,7 @@ export async function launchExactBrowserInDocker(
     "-v",
     `${BROWSER_CACHE_VOLUME}:/cache`,
     ...env,
-    IMAGE_TAG,
+    imageTag,
   ]);
 
   try {

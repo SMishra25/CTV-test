@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       x11-utils \
       x11vnc \
       fluxbox \
+      feh \
       novnc \
       websockify \
       ca-certificates \
@@ -66,6 +67,7 @@ RUN npm install --omit=dev
 
 COPY resolve-and-launch.mjs ./
 COPY entrypoint.sh ./
+COPY fluxbox/init ./fluxbox/init
 RUN chmod +x entrypoint.sh
 
 # Browser binaries are cached in a volume so each exact version downloads once.
