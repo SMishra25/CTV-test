@@ -223,6 +223,9 @@ function launchBrowser(executable, appUrl, targetMajor) {
     "--disable-translate",
     "--disable-infobars",
     "--disable-nacl",
+    // Local dev servers (e.g. `vite preview`) serve self-signed certs, and the
+    // host rewrite to host.docker.internal also breaks hostname matching.
+    "--ignore-certificate-errors",
     `--user-data-dir=${profileDir}`,
     `--remote-debugging-port=${debugPort}`,
     "--remote-debugging-address=0.0.0.0",

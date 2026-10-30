@@ -9,8 +9,7 @@ import {
 } from "./lib/launch";
 
 const APP_URL_STORAGE_KEY = "ctv-test-kit-app-url";
-const DEFAULT_APP_URL =
-  "https://ctv.play.tv2.no/pull-requests/PR-4103/18337/play/";
+const DEFAULT_APP_URL = "http://localhost:8080/";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
