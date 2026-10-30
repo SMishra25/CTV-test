@@ -125,6 +125,39 @@ git clone git@github.com:SMishra25/CTV-test.git
 
 ---
 
+## Setup for AI agents
+
+You can hand this repo to an AI coding agent (Claude Code, Cursor, etc.) and let it do the setup. The agent can run the clone, install, image build and dev server. **You** still need to:
+
+- Install and start **Docker Desktop** (an agent can't do this for you).
+- Run your own app on the host (e.g. `http://localhost:8080`).
+- Open the noVNC viewer in a browser to look at the result.
+
+### Copy-paste prompt
+
+> Clone https://github.com/SMishra25/CTV-test and set it up. Verify Docker is running (`docker info`) and stop to tell me if it isn't. Then run `npm install`, `npm run docker:build`, and `npm run doctor`. Start `npm run dev` in the background and confirm http://localhost:5173 responds. Tell me when it's ready.
+
+### Steps and success checks
+
+| Step | Command | Success looks like |
+|------|---------|--------------------|
+| 1. Docker running | `docker info` | Prints server info (no "Cannot connect" error). If it fails, **stop and ask the user to start Docker Desktop**. |
+| 2. Dependencies | `npm install` | Exits 0 |
+| 3. Build images | `npm run docker:build` | Exits 0; takes ~3-5 min, so use a long timeout or run in the background |
+| 4. Preflight | `npm run doctor` | Exits 0 and prints "Ready" |
+| 5. Start UI | `npm run dev` (background, never suspend) | `curl -I http://localhost:5173` returns `200` |
+| 6. Hand off | - | Tell the user to open http://localhost:5173, start their app, pick a platform/model, and click **Launch exact TV browser** |
+
+### Notes for agents
+
+- **No fallbacks:** never swap in a "close enough" Chromium version; if the exact one can't be resolved, the launch must fail.
+- The **first launch of each Chromium version** downloads a large build (3-5 min on Apple Silicon). That is normal, not a failure.
+- Don't edit `chromiumVersion` mappings in `src/data/platforms/` unless asked.
+- Clean up with `npm run docker:stop`. Debug launch failures with `docker ps -a --filter label=ctv-test-kit=1` and `docker logs <container-id>`.
+- See also [`AGENTS.md`](./AGENTS.md) / [`CLAUDE.md`](./CLAUDE.md), which agents read automatically.
+
+---
+
 ## Prerequisites
 
 | Requirement | Notes |
@@ -217,6 +250,7 @@ Response includes `viewUrl`, `debugPort`, and optionally `devtoolsUrl`. Connect 
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | UI + launch API (daily use) |
+| `npm run doctor` | Preflight check: Node, Docker daemon, images, port 5173 |
 | `npm run docker:build` | Build default + legacy runner images |
 | `npm run docker:stop` | Stop all browser sessions |
 | `npm run build` | Static UI only (no launch API) |

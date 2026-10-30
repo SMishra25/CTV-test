@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "docker:build": "docker build -t ctv-test-kit-browser:latest docker && docker build -f docker/Dockerfile.legacy -t ctv-test-kit-browser:legacy docker",
+    "doctor": "node scripts/doctor.mjs",
     "docker:stop": "docker ps -q --filter label=ctv-test-kit=1 | xargs -r docker stop"
   },
   "dependencies": {
