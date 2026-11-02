@@ -250,7 +250,7 @@ How it works:
 - **Tunnel:** the URL keeps `localhost`; its ports (the page and the `ws=` target) are forwarded from the container to your machine, where the extension's tunnel listens.
 - **`devtools://` URLs:** Chromium refuses these on its command line, so they are opened through the browser's debugging port after start. Chromium < 76 gets `chrome-devtools://`, and Chromium 38 the older `devtools.html` page name.
 
-Tested on an LG 2017 TV (webOS 3.x, Chromium 38) and an LG 2019 TV (webOS 4.x, Chromium 68). Samsung Tizen is not verified yet.
+Tested on an LG 2017 TV (webOS 3.x, Chromium 38), an LG 2019 TV (webOS 4.x, Chromium 68) and a Samsung Smart Monitor (Tizen 5.5, Chromium 69). Other Tizen versions are not verified yet.
 
 ---
 
