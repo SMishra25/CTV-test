@@ -1,4 +1,4 @@
-# Ubuntu 18.04 userspace for Chromium 53–56 (segfault on modern Debian Bookworm).
+# Ubuntu 18.04 userspace for Chromium 38–56 (segfault on modern Debian Bookworm).
 # Force amd64: historical Chromium snapshots only exist for Linux x86_64.
 FROM --platform=linux/amd64 ubuntu:18.04
 
@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       novnc \
       websockify \
       fonts-liberation \
+      fonts-dejavu-core \
       socat \
       unzip \
       libasound2 \
@@ -63,7 +64,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libexpat1 \
       libfontconfig1 \
       libfreetype6 \
+      libcap2 \
     && rm -rf /var/lib/apt/lists/*
+
+# Chromium 38 needs libcap2 (above) and links against libudev.so.0, which Ubuntu 18.04
+# only ships as the compatible .so.1. fonts-dejavu-core (above) covers the zero-width
+# spaces old DevTools inserts into long text, which Liberation shows as boxes.
+RUN lib="$(ldconfig -p | awk '/libudev.so.1 /{print $NF; exit}')" \
+    && ln -sf "$lib" "$(dirname "$lib")/libudev.so.0"
 
 WORKDIR /opt/runner
 COPY package.json ./

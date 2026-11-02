@@ -1,6 +1,7 @@
 import "./style.css";
 import { getDefaultPlatform, getPlatform, platforms } from "./data";
 import type { PlatformId } from "./data/types";
+import { isDebugUrl } from "./lib/debug-url";
 import { getBrowserForSelection, getModel } from "./lib/lookup";
 import {
   buildLaunchPayload,
@@ -51,7 +52,7 @@ function render() {
           spellcheck="false"
           value="${localStorage.getItem(APP_URL_STORAGE_KEY) ?? DEFAULT_APP_URL}"
         />
-        <p class="field-hint">Optional. Use <code>http://localhost:…</code> for a dev server on this machine — it is rewritten to reach the host from inside Docker.</p>
+        <p class="field-hint">Optional. Use <code>http://localhost:…</code> for a dev server on this machine — it is rewritten to reach the host from inside Docker. Or paste a TV debug URL from the Samsung / LG VS Code extension to open the TV's DevTools.</p>
       </div>
 
       <div class="actions">
@@ -146,6 +147,11 @@ function render() {
       <h2 class="panel-sub">Test engine (exact, in container)</h2>
       <p class="browser-name">${engineSource}</p>
       <p class="browser-meta">Runs in Docker, viewed here over noVNC</p>
+      ${
+        browser.inspectorChromiumVersion && browser.inspectorChromiumVersion !== major
+          ? `<p class="browser-meta">For a TV debug URL: Chromium ${browser.inspectorChromiumVersion} (vendor-recommended inspector)</p>`
+          : ""
+      }
       ${browser.notes ? `<p class="browser-notes">${browser.notes}</p>` : ""}
     `;
   }
@@ -185,7 +191,13 @@ function render() {
       );
       setStatus(result.message, "ok");
       if (result.viewUrl) {
-        showSession(result.viewUrl, result.devtoolsUrl, result.debugPort);
+        // A TV debug session already shows DevTools; no second inspector for it.
+        const debugSession = isDebugUrl(appUrl);
+        showSession(
+          result.viewUrl,
+          debugSession ? undefined : result.devtoolsUrl,
+          debugSession ? undefined : result.debugPort
+        );
       }
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Launch failed", "err");

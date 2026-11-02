@@ -16,12 +16,16 @@ const SNAPSHOT_LIST_API =
   "https://www.googleapis.com/storage/v1/b/chromium-browser-snapshots/o";
 const CFT_VERSIONS_URL =
   "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json";
+/** From this major on, builds come from Chrome for Testing instead of snapshots. */
+const CHROME_FOR_TESTING_MIN_MAJOR = 113;
 
 /**
  * Main-branch base positions per Chromium major. Snapshots at/after the base
  * (and before the next major's base) report this major. Platform-independent.
  */
 const SNAPSHOT_BASE_BY_MAJOR = {
+  // Last Linux snapshot before the 38 branch point (38.0.2125.0); later ones report 39.
+  38: 289998,
   // Branch base for 53.0.2785 per chromium/src refs/heads/master@{#403382}
   53: 403382,
   56: 433059,
@@ -210,12 +214,46 @@ async function resolveChromeForTesting(targetMajor, platform) {
   return { executable, buildId: version, versionString: full };
 }
 
+/**
+ * Chromium ignores devtools:// and chrome-devtools:// URLs given on its command line,
+ * so a TV debug URL in that form is opened through the CDP port once it is up.
+ */
+async function openViaCdp(debugPort, url) {
+  const base = `http://127.0.0.1:${debugPort}`;
+  for (let i = 0; i < 120; i++) {
+    try {
+      if ((await fetch(`${base}/json/version`)).ok) {
+        // Newer Chromium requires PUT for /json/new; older builds accept any method.
+        for (const method of ["PUT", "GET"]) {
+          const res = await fetch(`${base}/json/new?${url}`, { method });
+          if (res.ok) {
+            log(`opened ${url}`);
+            return;
+          }
+        }
+        break;
+      }
+    } catch {
+      // not up yet
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  log(`could not open ${url} through the debugging port`);
+}
+
 function launchBrowser(executable, appUrl, targetMajor) {
   const profileDir = "/tmp/ctv-profile";
   const debugPort = process.env.REMOTE_DEBUG_PORT || "9222";
+  const openLater = /^(chrome-)?devtools:/i.test(appUrl);
   const args = [
     "--no-sandbox",
     "--disable-setuid-sandbox",
+    // Without Rosetta (e.g. Colima/QEMU) the zygote aborts and /proc/self/exe is the
+    // emulator, so child processes must be started directly from the browser binary.
+    // Only verified for the historical snapshots; Chrome for Testing is left as is.
+    ...(targetMajor < CHROME_FOR_TESTING_MIN_MAJOR
+      ? ["--no-zygote", `--browser-subprocess-path=${executable}`]
+      : []),
     "--no-first-run",
     "--no-default-browser-check",
     "--disable-gpu",
@@ -232,7 +270,7 @@ function launchBrowser(executable, appUrl, targetMajor) {
     "--window-position=0,0",
     "--window-size=1920,1080",
     "--start-maximized",
-    appUrl,
+    openLater ? "about:blank" : appUrl,
   ];
   if (targetMajor >= 111) {
     args.splice(args.length - 1, 0, "--remote-allow-origins=*");
@@ -247,6 +285,7 @@ function launchBrowser(executable, appUrl, targetMajor) {
     stdio: "ignore",
   });
   child.unref();
+  if (openLater) void openViaCdp(debugPort, appUrl);
 
   log("browser started; session is ready");
 
@@ -280,7 +319,7 @@ async function main() {
   log(`resolving exact Chromium ${targetMajor} for platform ${platform}`);
 
   const resolved =
-    targetMajor >= 113
+    targetMajor >= CHROME_FOR_TESTING_MIN_MAJOR
       ? await resolveChromeForTesting(targetMajor, platform)
       : await resolveSnapshot(targetMajor, platform);
 

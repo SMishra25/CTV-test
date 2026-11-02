@@ -1,4 +1,5 @@
 import type { BrowserInfo, Platform, TvModel } from "../data/types";
+import { isDebugUrl } from "./debug-url";
 
 export interface LaunchPayload {
   platformId: string;
@@ -16,12 +17,17 @@ export function buildLaunchPayload(
   appUrl?: string
 ): LaunchPayload {
   const trimmed = appUrl?.trim();
+  // A TV debug URL opens DevTools, so use the vendor's recommended inspector version.
+  const browser =
+    isDebugUrl(trimmed) && model.browser.inspectorChromiumVersion
+      ? { ...model.browser, chromiumVersion: model.browser.inspectorChromiumVersion }
+      : model.browser;
   return {
     platformId: platform.id,
     platformLabel: platform.label,
     modelId: model.id,
     modelLabel: model.label,
-    browser: model.browser,
+    browser,
     ...(trimmed ? { appUrl: trimmed } : {}),
   };
 }

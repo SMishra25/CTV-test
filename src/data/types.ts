@@ -4,6 +4,11 @@ export interface BrowserInfo {
   /** Display name, e.g. "Chromium 108" */
   name: string;
   chromiumVersion: string;
+  /**
+   * Chromium major the vendor recommends for DevTools when debugging this TV,
+   * used when a TV debug URL is pasted. Defaults to chromiumVersion.
+   */
+  inspectorChromiumVersion?: string;
   /** User-agent or engine notes for testers */
   notes?: string;
   /**
