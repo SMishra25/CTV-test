@@ -33,11 +33,13 @@ const SNAPSHOT_BASE_BY_MAJOR = {
   68: 561733,
   69: 576753,
   76: 638880,
-  79: 693954,
+  // 693954 is the 78 branch point (snapshots there report 78.0.3904).
+  79: 706915,
   85: 782793,
   87: 812852,
   94: 911515,
-  108: 1047731,
+  // 1047731 is the 107 branch point (snapshots there report 107.0.5304).
+  108: 1058933,
 };
 
 function log(msg) {
@@ -248,12 +250,6 @@ function launchBrowser(executable, appUrl, targetMajor) {
   const args = [
     "--no-sandbox",
     "--disable-setuid-sandbox",
-    // Without Rosetta (e.g. Colima/QEMU) the zygote aborts and /proc/self/exe is the
-    // emulator, so child processes must be started directly from the browser binary.
-    // Only verified for the historical snapshots; Chrome for Testing is left as is.
-    ...(targetMajor < CHROME_FOR_TESTING_MIN_MAJOR
-      ? ["--no-zygote", `--browser-subprocess-path=${executable}`]
-      : []),
     "--no-first-run",
     "--no-default-browser-check",
     "--disable-gpu",
