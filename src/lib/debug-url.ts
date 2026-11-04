@@ -8,7 +8,8 @@
  * container). Plain app URLs are left to the existing App URL handling.
  */
 
-const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
+// IPv4 only: the container forwards these ports with socat bound to 127.0.0.1.
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1"]);
 
 function isLoopback(host: string): boolean {
   return LOOPBACK_HOSTS.has(host.toLowerCase());
@@ -46,8 +47,8 @@ export function debugUrlLoopbackPorts(input: string): number[] {
     ports.add(Number(url.port));
   }
   for (const key of ["ws", "wss"]) {
-    // host:port, where the host may be a bracketed IPv6 address such as [::1].
-    const m = /^(\[[0-9a-fA-F:]+\]|[^/:]+):(\d{1,5})/.exec(url.searchParams.get(key) ?? "");
+    // host:port, taking the whole port so an out-of-range one isn't cut down to 5 digits.
+    const m = /^([^/:]+):(\d+)(?=[/?#]|$)/.exec(url.searchParams.get(key) ?? "");
     if (m && isLoopback(m[1])) ports.add(Number(m[2]));
   }
   return [...ports];

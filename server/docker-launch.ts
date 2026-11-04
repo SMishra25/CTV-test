@@ -310,6 +310,13 @@ export function resolveDebugUrlForContainer(
   chromiumMajor: string
 ): { url: string; forwardPorts: number[] } {
   const forwardPorts = debugUrlLoopbackPorts(debugUrl);
+  // socat would fail in the background, so DevTools would never connect and show no error.
+  const invalid = forwardPorts.find((p) => p < 1 || p > 65535);
+  if (invalid !== undefined) {
+    throw new DockerError(
+      `Invalid port in debug URL: ${invalid}. Copy the URL from the inspect session again.`
+    );
+  }
   const reserved = [
     VNC_CONTAINER_PORT,
     NOVNC_CONTAINER_PORT,
