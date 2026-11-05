@@ -9,7 +9,7 @@ import net from 'node:net';
 
 const IMAGES = [
   { tag: 'ctv-test-kit-browser:latest', hint: 'Chromium 57+' },
-  { tag: 'ctv-test-kit-browser:legacy', hint: 'Chromium 53-56' },
+  { tag: 'ctv-test-kit-browser:legacy', hint: 'Chromium 38-56' },
 ];
 const UI_PORT = 5173;
 

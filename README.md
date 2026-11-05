@@ -48,10 +48,11 @@ CTV Test Kit focuses on **engine fidelity**: pick a platform and model, and run 
 
 - **Inspect UI (DevTools)** — desktop Chrome DevTools attached to the TV Chromium running your app (best on **113+**)
 - **CDP port** exposed on localhost for advanced automation (Puppeteer/Playwright-style connect—not Cypress out of the box)
+- **Debug a real TV** — paste the debug URL from the Samsung / LG VS Code extension and the TV's DevTools opens in the matching old Chromium, which modern macOS can no longer run ([details](#debugging-a-real-tv))
 
-### Legacy TV support (2018)
+### Legacy TV support (2016–2018)
 
-- Separate **legacy Docker image** (Ubuntu 18.04) for Chromium **53–56** so oldest Tizen/webOS profiles start reliably
+- Separate **legacy Docker image** (Ubuntu 18.04) for Chromium **38–56** so oldest Tizen/webOS profiles start reliably
 
 ---
 
@@ -176,7 +177,7 @@ You do **not** need Tizen Studio, webOS CLI, or TV SDKs to use this tool—only 
 | Image tag | Used for |
 |-----------|----------|
 | `ctv-test-kit-browser:latest` | Chromium **57+** (Debian Bookworm) |
-| `ctv-test-kit-browser:legacy` | Chromium **53–56** (Ubuntu 18.04) |
+| `ctv-test-kit-browser:legacy` | Chromium **38–56** (Ubuntu 18.04) |
 
 Rebuild after changes to `docker/Dockerfile`, `docker/Dockerfile.legacy`, `docker/entrypoint.sh`, or `docker/resolve-and-launch.mjs`.
 
@@ -232,6 +233,27 @@ npm run docker:stop
 
 ---
 
+## Debugging a real TV
+
+Older TVs can only be inspected from an equally old DevTools, and those Chromium builds no longer run on modern macOS. The kit can open the TV's DevTools inside the container instead:
+
+1. Start inspecting your app from the Samsung / LG VS Code extension (or `sdb` / `ares-inspect`) and copy the debug URL it prints, e.g.
+   ```
+   http://localhost:49542/devtools/devtools.html?ws=localhost:49542/devtools/page/59696BFF-…
+   ```
+2. Pick the TV's platform and year/model, paste the URL into **App URL**, and click **Launch exact TV browser**.
+3. DevTools for the TV opens in the viewer. Keep the inspect session in VS Code running; it holds the tunnel to the TV.
+
+How it works:
+
+- **Version:** for a debug URL the kit opens the vendor's recommended inspector version (`inspectorChromiumVersion` in `src/data/platforms/`), otherwise the TV's own engine. LG's table: webOS 3.x → 38, webOS 4.x–5.0 → 68, webOS 6.0+ → any current Chrome.
+- **Tunnel:** the URL keeps `localhost`; its ports (the page and the `ws=` target) are forwarded from the container to your machine, where the extension's tunnel listens.
+- **`devtools://` URLs:** Chromium refuses these on its command line, so they are opened through the browser's debugging port after start. Chromium < 76 gets `chrome-devtools://`, and Chromium 38 the older `devtools.html` page name.
+
+Tested on an LG 2017 TV (webOS 3.x, Chromium 38), an LG 2019 TV (webOS 4.x, Chromium 68) and a Samsung Smart Monitor (Tizen 5.5, Chromium 69). Other Tizen versions are not verified yet.
+
+---
+
 ## API (automation hooks)
 
 With `npm run dev` running:
@@ -268,7 +290,7 @@ Response includes `viewUrl`, `debugPort`, and optionally `devtoolsUrl`. Connect 
 
 Self-signed local HTTPS is supported for dev. Prefer plain `http://localhost:…` when possible.
 
-### Launch fails for 2018 models (Chromium 53–56)
+### Launch fails for 2016–2018 models (Chromium 38–56)
 
 ```bash
 docker images ctv-test-kit-browser:legacy

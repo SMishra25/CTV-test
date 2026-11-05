@@ -3,6 +3,11 @@ import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import {
+  debugUrlLoopbackPorts,
+  isDebugUrl,
+  normalizeDebugUrlForMajor,
+} from "../src/lib/debug-url";
 
 const execFileAsync = promisify(execFile);
 
@@ -15,6 +20,7 @@ const BROWSER_CACHE_VOLUME = "ctv-test-kit-browsers";
 const NOVNC_CONTAINER_PORT = 7900;
 const DEBUG_CONTAINER_PORT = 9222;
 const INTERNAL_DEBUG_PORT = 9223;
+const VNC_CONTAINER_PORT = 5900;
 
 const dockerDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -294,6 +300,42 @@ export function resolveAppUrlForContainer(appUrl?: string): string {
 }
 
 /**
+ * A TV debug URL (from the Samsung / LG tooling) points at a tunnel on the host's
+ * localhost, both in the page address and in its ws= target. Keep localhost in the
+ * URL and forward those ports from the container to the host instead of rewriting:
+ * the DevTools page needs both to reach the same tunnel.
+ */
+export function resolveDebugUrlForContainer(
+  debugUrl: string,
+  chromiumMajor: string
+): { url: string; forwardPorts: number[] } {
+  const forwardPorts = debugUrlLoopbackPorts(debugUrl);
+  // socat would fail in the background, so DevTools would never connect and show no error.
+  const invalid = forwardPorts.find((p) => p < 1 || p > 65535);
+  if (invalid !== undefined) {
+    throw new DockerError(
+      `Invalid port in debug URL: ${invalid}. Copy the URL from the inspect session again.`
+    );
+  }
+  const reserved = [
+    VNC_CONTAINER_PORT,
+    NOVNC_CONTAINER_PORT,
+    DEBUG_CONTAINER_PORT,
+    INTERNAL_DEBUG_PORT,
+  ];
+  const clash = forwardPorts.find((p) => reserved.includes(p));
+  if (clash) {
+    throw new DockerError(
+      `The debug URL uses localhost:${clash}, which the browser container needs for itself. Restart the inspect session so the tool picks another port.`
+    );
+  }
+  return {
+    url: normalizeDebugUrlForMajor(debugUrl, Number(chromiumMajor)),
+    forwardPorts,
+  };
+}
+
+/**
  * Launch the exact TV Chromium engine inside a container and expose it via
  * noVNC. Returns the URL the UI should open to view/interact with the browser.
  */
@@ -306,7 +348,7 @@ export async function launchExactBrowserInDocker(
   if (!(await imageExists(imageTag))) {
     const hint =
       imageTag === LEGACY_IMAGE_TAG
-        ? "Legacy runner image missing (needed for Chromium 53–56). Run `npm run docker:build`."
+        ? "Legacy runner image missing (needed for Chromium 38–56). Run `npm run docker:build`."
         : "Browser runner image not built yet. Run `npm run docker:build` once.";
     throw new DockerError(hint);
   }
@@ -317,8 +359,13 @@ export async function launchExactBrowserInDocker(
 
   const hostPort = await findFreePort();
   const debugPort = await findFreePort();
-  const containerAppUrl = resolveAppUrlForContainer(options.appUrl);
+  const debug = isDebugUrl(options.appUrl)
+    ? resolveDebugUrlForContainer(options.appUrl, options.chromiumMajor)
+    : undefined;
+  const containerAppUrl = debug?.url ?? resolveAppUrlForContainer(options.appUrl);
   const env = [
+    "-e",
+    `FORWARD_PORTS=${debug?.forwardPorts.join(" ") ?? ""}`,
     "-e",
     `TV_CHROMIUM_MAJOR=${options.chromiumMajor}`,
     "-e",
@@ -356,12 +403,16 @@ export async function launchExactBrowserInDocker(
     throw err;
   }
 
+  // In a TV debug session the open page is the TV's DevTools itself, so a DevTools
+  // link for it would inspect the inspector rather than the TV.
   let devtoolsUrl: string | undefined;
-  try {
-    await waitForDebugPort(debugPort, 30_000);
-    devtoolsUrl = await resolveDevtoolsUrl(debugPort);
-  } catch {
-    // CDP may be unavailable on some legacy engines.
+  if (!debug) {
+    try {
+      await waitForDebugPort(debugPort, 30_000);
+      devtoolsUrl = await resolveDevtoolsUrl(debugPort);
+    } catch {
+      // CDP may be unavailable on some legacy engines.
+    }
   }
 
   const viewUrl = `http://localhost:${hostPort}/vnc.html?autoconnect=true&resize=remote&path=websockify`;

@@ -1,14 +1,27 @@
 import type { Platform } from "../types";
 
 /**
- * Placeholder LG webOS browser mappings (2018 → latest).
+ * Placeholder LG webOS browser mappings (2016 → latest).
  * Update chromiumVersion / launchKey when you pin real test binaries.
  * Sources: LG webOS release notes & public UA samples — verify on devices.
+ * inspectorChromiumVersion follows LG's "Supported Chrome versions for using Inspector"
+ * table (webOS 3.x: 38, webOS 4.x–5.0: 68, webOS 6.0+: any current Chrome).
  */
 export const webosPlatform: Platform = {
   id: "webos",
   label: "LG webOS",
   models: [
+    {
+      id: "webos-2017",
+      label: "2016–2017 — webOS 3.x",
+      year: 2017,
+      browser: {
+        name: "LG Browser (Chromium 38)",
+        chromiumVersion: "38",
+        inspectorChromiumVersion: "38",
+        launchKey: "chromium-38",
+      },
+    },
     {
       id: "webos-2018",
       label: "2018 — webOS 4.0",
@@ -16,6 +29,7 @@ export const webosPlatform: Platform = {
       browser: {
         name: "LG Browser (Chromium 53)",
         chromiumVersion: "53",
+        inspectorChromiumVersion: "68",
         notes: "Legacy MSE/EME behavior; validate playback on device",
         launchKey: "chromium-53",
       },
@@ -27,6 +41,7 @@ export const webosPlatform: Platform = {
       browser: {
         name: "LG Browser (Chromium 68)",
         chromiumVersion: "68",
+        inspectorChromiumVersion: "68",
         launchKey: "chromium-68",
       },
     },
@@ -37,6 +52,7 @@ export const webosPlatform: Platform = {
       browser: {
         name: "LG Browser (Chromium 79)",
         chromiumVersion: "79",
+        inspectorChromiumVersion: "68",
         launchKey: "chromium-79",
       },
     },

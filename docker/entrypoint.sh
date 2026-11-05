@@ -40,5 +40,12 @@ echo "[ctv] starting CDP proxy ${DEBUG_PROXY_PORT} -> 127.0.0.1:${INTERNAL_DEBUG
 socat "TCP-LISTEN:${DEBUG_PROXY_PORT},fork,bind=0.0.0.0,reuseaddr" "TCP:127.0.0.1:${INTERNAL_DEBUG_PORT}" >/tmp/socat-debug.log 2>&1 &
 export REMOTE_DEBUG_PORT="${INTERNAL_DEBUG_PORT}"
 
+# TV debug URLs point at a tunnel on the host's localhost (opened by sdb / ares-inspect);
+# forward those ports so the DevTools page and its ws= target both reach it.
+for port in ${FORWARD_PORTS:-}; do
+  echo "[ctv] forwarding localhost:${port} -> host.docker.internal:${port}"
+  socat "TCP-LISTEN:${port},fork,bind=127.0.0.1,reuseaddr" "TCP:host.docker.internal:${port}" >/tmp/socat-forward-${port}.log 2>&1 &
+done
+
 echo "[ctv] resolving + launching browser"
 exec node resolve-and-launch.mjs
