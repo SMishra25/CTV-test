@@ -172,7 +172,13 @@ async function resolveSnapshot(targetMajor, platform) {
         versionString: full,
       };
     }
-    log(`position ${revision} is major ${major}, not ${targetMajor}; continuing`);
+    log(`position ${revision} is major ${major}, not ${targetMajor}; removing it`);
+    // A wrong-major build is never used, and up to 8 of them (200–450 MB each)
+    // would otherwise stay in the cache.
+    fs.rmSync(
+      browserCacheFolder({ browser: Browser.CHROMIUM, buildId: String(revision), platform }),
+      { recursive: true, force: true }
+    );
     if (major > targetMajor) break;
   }
 
