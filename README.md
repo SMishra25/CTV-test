@@ -247,7 +247,7 @@ Older TVs can only be inspected from an equally old DevTools, and those Chromium
 How it works:
 
 - **Version:** for a debug URL the kit opens the vendor's recommended inspector version (`inspectorChromiumVersion` in `src/data/platforms/`), otherwise the TV's own engine. LG's table: webOS 3.x → 38, webOS 4.x–5.0 → 68, webOS 6.0+ → any current Chrome.
-- **Tunnel:** the URL keeps `localhost`; its ports (the page and the `ws=` target) are forwarded from the container to your machine, where the extension's tunnel listens.
+- **Tunnel:** the URL keeps `localhost`; its ports (the page and the `ws=` target) are forwarded from the container to your machine, where the extension's tunnel listens. The host must be `localhost` or `127.0.0.1`: the forward is IPv4 only, so an IPv6 `[::1]` URL won't connect. The Samsung and LG tools print one of the two supported forms.
 - **`devtools://` URLs:** Chromium refuses these on its command line, so they are opened through the browser's debugging port after start. Chromium < 76 gets `chrome-devtools://`, and Chromium 38 the older `devtools.html` page name.
 
 Tested on an LG 2017 TV (webOS 3.x, Chromium 38), an LG 2019 TV (webOS 4.x, Chromium 68) and a Samsung Smart Monitor (Tizen 5.5, Chromium 69). Other Tizen versions are not verified yet.
