@@ -26,6 +26,8 @@ const CHROME_FOR_TESTING_MIN_MAJOR = 113;
 const SNAPSHOT_BASE_BY_MAJOR = {
   // Last Linux snapshot before the 38 branch point (38.0.2125.0); later ones report 39.
   38: 289998,
+  // 47 runs from the 46 branch point to 352221; 351005 reports 47.0.2521.0.
+  47: 351005,
   // Branch base for 53.0.2785 per chromium/src refs/heads/master@{#403382}
   53: 403382,
   56: 433059,

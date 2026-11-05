@@ -1,7 +1,7 @@
 import type { Platform } from "../types";
 
 /**
- * Placeholder Tizen TV browser mappings (2018 → latest).
+ * Placeholder Tizen TV browser mappings (2017 → latest).
  * Update chromiumVersion / launchKey when you pin real test binaries.
  * Sources: Samsung Tizen release notes & public UA samples — verify on devices.
  */
@@ -9,6 +9,16 @@ export const tizenPlatform: Platform = {
   id: "tizen",
   label: "Samsung Tizen",
   models: [
+    {
+      id: "tizen-2017",
+      label: "2017 — Tizen 3.0",
+      year: 2017,
+      browser: {
+        name: "Tizen WebKit (Chromium 47)",
+        chromiumVersion: "47",
+        launchKey: "chromium-47",
+      },
+    },
     {
       id: "tizen-2018",
       label: "2018 — Tizen 4.0 (MU/Family)",
