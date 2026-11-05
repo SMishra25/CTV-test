@@ -22,6 +22,8 @@ const CFT_VERSIONS_URL =
  * (and before the next major's base) report this major. Platform-independent.
  */
 const SNAPSHOT_BASE_BY_MAJOR = {
+  // 47 runs from the 46 branch point to 352221; 351005 reports 47.0.2521.0.
+  47: 351005,
   // Branch base for 53.0.2785 per chromium/src refs/heads/master@{#403382}
   53: 403382,
   56: 433059,
